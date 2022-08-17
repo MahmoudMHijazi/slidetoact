@@ -232,10 +232,10 @@ class SlideToActView @JvmOverloads constructor(
     var completeIcon: Int = 0
         set(value) {
             field = value
-            if (field != 0) {
-                mDrawableTick = loadIconCompat(context, value)
-                invalidate()
-            }
+//            if (field != 0) {
+//                mDrawableTick = loadIconCompat(context, value)
+//                invalidate()
+//            }
         }
 
     /* -------------------- PAINT & DRAW -------------------- */
