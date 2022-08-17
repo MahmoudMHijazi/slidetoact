@@ -8,11 +8,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
 import android.content.res.TypedArray
-import android.graphics.Canvas
-import android.graphics.Outline
-import android.graphics.Paint
-import android.graphics.RectF
-import android.graphics.Typeface
+import android.graphics.*
 import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.VibrationEffect
@@ -226,16 +222,17 @@ class SlideToActView @JvmOverloads constructor(
 
     /** Tick drawable, if is an AnimatedVectorDrawable it will be animated */
     private var mDrawableTick: Drawable
+    private var completeIconDrawable: Drawable? = null
     private var mFlagDrawTick: Boolean = false
 
     @DrawableRes
     var completeIcon: Int = 0
         set(value) {
             field = value
-//            if (field != 0) {
-//                mDrawableTick = loadIconCompat(context, value)
-//                invalidate()
-//            }
+            if (field != 0) {
+                completeIconDrawable = loadIconCompat(context, value)
+                invalidate()
+            }
         }
 
     /* -------------------- PAINT & DRAW -------------------- */
@@ -296,6 +293,7 @@ class SlideToActView @JvmOverloads constructor(
     init {
         val actualOuterColor: Int
         val actualInnerColor: Int
+        //val completeIconColor: Int
         val actualTextColor: Int
         val actualIconColor: Int
 
@@ -340,6 +338,7 @@ class SlideToActView @JvmOverloads constructor(
 
                 actualOuterColor = getColor(R.styleable.SlideToActView_outer_color, defaultOuter)
                 actualInnerColor = getColor(R.styleable.SlideToActView_inner_color, defaultWhite)
+                //completeIconColor = getColor(R.styleable.SlideToActView_inner_color, defaultWhite)
 
                 // For text color, check if the `text_color` is set.
                 // if not check if the `outer_color` is set.
@@ -567,6 +566,9 @@ class SlideToActView @JvmOverloads constructor(
         )
 
         tintIconCompat(mDrawableTick, innerColor)
+        completeIconDrawable?.let {
+            tintIconCompat(it, Color.WHITE)
+        }
         if (mFlagDrawTick) {
             mDrawableTick.draw(canvas)
         }
@@ -794,7 +796,10 @@ class SlideToActView @JvmOverloads constructor(
         mIsCompleted = true
         isEnabled = false
 
-        startIconAnimation(mDrawableTick)
+        //startIconAnimation(mDrawableTick)
+        completeIconDrawable?.let {
+            startIconAnimation(it)
+        }
 
         mFlagDrawTick = true
         mTickMargin = mIconMargin
