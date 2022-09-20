@@ -3,6 +3,7 @@ package com.ncorti.slidetoact
 import android.Manifest
 import android.animation.Animator
 import android.animation.AnimatorSet
+import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.content.Context
@@ -32,7 +33,6 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.RequiresApi
 import androidx.annotation.StyleRes
 import androidx.core.content.ContextCompat
-import androidx.core.content.ContextCompat.getSystemService
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.graphics.drawable.DrawableCompat
 import androidx.core.widget.TextViewCompat
@@ -40,7 +40,6 @@ import com.ncorti.slidetoact.SlideToActIconUtil.createIconAnimator
 import com.ncorti.slidetoact.SlideToActIconUtil.loadIconCompat
 import com.ncorti.slidetoact.SlideToActIconUtil.startIconAnimation
 import com.ncorti.slidetoact.SlideToActIconUtil.stopIconAnimation
-import com.ncorti.slidetoact.SlideToActIconUtil.tintIconCompat
 
 /**
  *  Class representing the custom view, SlideToActView.
@@ -89,6 +88,7 @@ class SlideToActView @JvmOverloads constructor(
             field = value
             mTextView.text = value
             mTextPaint.set(mTextView.paint)
+            secondTextPaint.set(mTextView.paint)
             invalidate()
         }
 
@@ -98,6 +98,7 @@ class SlideToActView @JvmOverloads constructor(
             field = value
             mTextView.typeface = Typeface.create("sans-serif-light", value)
             mTextPaint.set(mTextView.paint)
+            secondTextPaint.set(mTextPaint)
             invalidate()
         }
 
@@ -110,6 +111,7 @@ class SlideToActView @JvmOverloads constructor(
                 TextViewCompat.setTextAppearance(mTextView, value)
                 mTextPaint.set(mTextView.paint)
                 mTextPaint.color = mTextView.currentTextColor
+                secondTextPaint.set(mTextPaint)
             }
         }
 
@@ -143,6 +145,7 @@ class SlideToActView @JvmOverloads constructor(
             field = value
             mTextView.setTextColor(value)
             mTextPaint.color = textColor
+            secondTextPaint.color = textColor
             invalidate()
         }
 
@@ -293,6 +296,17 @@ class SlideToActView @JvmOverloads constructor(
     var onSlideResetListener: OnSlideResetListener? = null
     var onSlideUserFailedListener: OnSlideUserFailedListener? = null
 
+    // Bottom text to show under main text if needed
+    var bottomText = ""
+    private var secondTextView: TextView
+
+    /** Paint used for second text element */
+    private var secondTextPaint: Paint = Paint(Paint.ANTI_ALIAS_FLAG)
+
+    /** Positioning of secondText */
+    private var secondTextYPosition = -1f
+    private var secondTextXPosition = -1f
+
     init {
         val actualOuterColor: Int
         val actualInnerColor: Int
@@ -302,7 +316,10 @@ class SlideToActView @JvmOverloads constructor(
         val actualCompleteDrawable: Int
 
         mTextView = TextView(context)
+        secondTextView = TextView(context)
+
         mTextPaint = mTextView.paint
+        secondTextPaint = secondTextView.paint
 
         val attrs: TypedArray = context.theme.obtainStyledAttributes(
             xmlAttrs,
@@ -357,6 +374,7 @@ class SlideToActView @JvmOverloads constructor(
                     R.styleable.SlideToActView_text_size,
                     resources.getDimensionPixelSize(R.dimen.slidetoact_default_text_size)
                 )
+
                 textColor = actualTextColor
 
                 // TextAppearance is the last as will have precedence over everything text related.
@@ -412,6 +430,9 @@ class SlideToActView @JvmOverloads constructor(
                 mTickMargin = mIconMargin
 
                 mIsCompleted = getBoolean(R.styleable.SlideToActView_state_complete, false)
+
+                // Second text size set
+                secondTextPaint.textSize = mTextPaint.textSize/1.3f
             }
         } finally {
             attrs.recycle()
@@ -434,6 +455,7 @@ class SlideToActView @JvmOverloads constructor(
         mDrawableTick = loadIconCompat(context, actualCompleteDrawable)
 
         mTextPaint.textAlign = Paint.Align.CENTER
+        secondTextPaint.textAlign = Paint.Align.CENTER
 
         outerColor = actualOuterColor
         innerColor = actualInnerColor
@@ -478,8 +500,12 @@ class SlideToActView @JvmOverloads constructor(
 
         // Text horizontal/vertical positioning (both centered)
         mTextXPosition = mAreaWidth.toFloat() / 2
-        mTextYPosition = (mAreaHeight.toFloat() / 2) -
+        mTextYPosition = (mAreaHeight.toFloat() / 2.8f) -
             (mTextPaint.descent() + mTextPaint.ascent()) / 2
+
+        secondTextXPosition = mAreaWidth.toFloat() / 2
+        secondTextYPosition = (mAreaHeight.toFloat() / 1.4f) -
+                (secondTextPaint.descent() + secondTextPaint.ascent()) / 2
 
         // Make sure the position is recomputed.
         mPosition = 0
@@ -508,6 +534,7 @@ class SlideToActView @JvmOverloads constructor(
 
         // Text alpha
         mTextPaint.alpha = (255 * mPositionPercInv).toInt()
+        secondTextPaint.alpha = (255 * mPositionPercInv).toInt()
         // Checking if the TextView has a Transformation method applied (e.g. AllCaps).
         val textToDraw = mTextView.transformationMethod?.getTransformation(text, mTextView) ?: text
         canvas.drawText(
@@ -517,6 +544,17 @@ class SlideToActView @JvmOverloads constructor(
             mTextXPosition,
             mTextYPosition,
             mTextPaint
+        )
+
+        // Checking if the TextView has a Transformation method applied (e.g. AllCaps).
+        val secondTextToDraw = mTextView.transformationMethod?.getTransformation(bottomText, secondTextView) ?: bottomText
+        canvas.drawText(
+            secondTextToDraw,
+            0,
+            secondTextToDraw.length,
+            secondTextXPosition,
+            secondTextYPosition,
+            secondTextPaint
         )
 
         // Inner Cursor
@@ -567,7 +605,7 @@ class SlideToActView @JvmOverloads constructor(
         )
 
         //tintIconCompat(mDrawableTick, innerColor)
-        
+
         if (mFlagDrawTick) {
             mDrawableTick.draw(canvas)
         }
@@ -869,7 +907,7 @@ class SlideToActView @JvmOverloads constructor(
     /**
      * Private method that is performed when you want to reset the cursor
      */
-    private fun startAnimationReset() {
+    fun startAnimationReset(shouldEnableAtEnd: Boolean = true) {
         mIsCompleted = false
         val animSet = AnimatorSet()
 
@@ -941,7 +979,10 @@ class SlideToActView @JvmOverloads constructor(
                 }
 
                 override fun onAnimationEnd(p0: Animator?) {
-                    isEnabled = true
+                    if(shouldEnableAtEnd) {
+                        isEnabled = true
+                    }
+
                     stopIconAnimation(mDrawableTick)
                     onSlideToActAnimationEventListener?.onSlideResetAnimationEnded(
                         this@SlideToActView
@@ -1097,6 +1138,20 @@ class SlideToActView @JvmOverloads constructor(
                 mAreaHeight,
                 mBorderRadius.toFloat()
             )
+        }
+    }
+
+    /**
+     * Updates bottom text and redraws
+     */
+    fun resetPosition() {
+        ValueAnimator.ofInt(mPosition, 0).apply {
+            addUpdateListener { valueAnimator ->
+                mPosition = valueAnimator.animatedValue as Int
+                Log.d("ResetPosition", "mPosition: $mPosition")
+            }
+
+            start()
         }
     }
 }

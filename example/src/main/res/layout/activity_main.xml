@@ -2,7 +2,8 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="#1B1C21">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -18,13 +19,31 @@
             android:gravity="center"
             android:textAppearance="@style/TextAppearance.AppCompat.Title" />
 
-        <com.ncorti.slidetoact.SlideToActView
+        <!--<com.ncorti.slidetoact.SlideToActView
             android:id="@+id/welcome_slider"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="8dp"
             android:elevation="6dp"
-            app:text="Sample SlideToActView" />
+            app:text="Sample SlideToActView" />-->
+
+        <com.ncorti.slidetoact.SlideToActView
+            android:layout_width="match_parent"
+            android:layout_height="45dp"
+            android:id="@+id/welcome_slider"
+            app:text_appearance="@style/SwiperTextStyle"
+            app:text="Swipe To Confirm"
+            app:slider_icon="@drawable/ic_slider_icon"
+            app:slider_icon_color="#FFFFFF"
+            app:inner_color="#EE157A"
+            app:outer_color="#26EE157A"
+            app:area_margin="0dp"
+            app:icon_margin="10dp"
+            app:border_radius="25dp"
+            app:rotate_icon="false"
+            app:slider_locked="false"
+            app:complete_icon="@drawable/ic_small_check"
+            />
 
         <TextView
             android:layout_width="match_parent"

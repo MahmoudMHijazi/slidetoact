@@ -37,4 +37,10 @@
         <item name="android:shadowRadius">5.0</item>
     </style>
 
+    <style name="SwiperTextStyle">
+        <item name="android:textSize">13sp</item>
+        <item name="android:fontFamily" tools:targetApi="jelly_bean">@font/larseit_medium</item>
+        <item name="android:textColor">#FFFFFF</item>
+    </style>
+
 </resources>

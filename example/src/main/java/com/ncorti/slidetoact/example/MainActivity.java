@@ -4,6 +4,9 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.os.Handler;
+import android.os.Looper;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -35,6 +38,30 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         findViewById(R.id.button_animation_duration).setOnClickListener(this);
         findViewById(R.id.button_bump_vibration).setOnClickListener(this);
         findViewById(R.id.button_completed).setOnClickListener(this);
+
+        final SlideToActView slideToActView = ((SlideToActView) findViewById(R.id.welcome_slider));
+        slideToActView.setBottomText("Price valid for 00:05");
+        handleTimer(4);
+    }
+
+    private void handleTimer(final int currentTimer) {
+        final SlideToActView slideToActView = ((SlideToActView) findViewById(R.id.welcome_slider));
+
+        if(currentTimer == 0) {
+            slideToActView.setBottomText("Price valid for 00:00");
+            slideToActView.setEnabled(false);
+            slideToActView.startAnimationReset(false);
+            return;
+        }
+
+        new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                slideToActView.setBottomText("Price valid for 00:0" + currentTimer);
+                slideToActView.invalidate();
+                handleTimer(currentTimer - 1);
+            }
+        }, 1000);
     }
 
     public boolean onCreateOptionsMenu(Menu menu) {
